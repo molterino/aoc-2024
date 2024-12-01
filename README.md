@@ -24,7 +24,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 
 | Day | Stars Earned |
 |-----|--------------|
-| 1   |              |
+| 1   |  ⭐          |
 | 2   |              |
 | 3   |              |
 | 4   |              |
