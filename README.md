@@ -26,7 +26,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 |-----|--------------|
 | 1   |  ⭐ ⭐        |
 | 2   |  ⭐ ⭐        |
-| 3   |  ⭐          |
+| 3   |  ⭐ ⭐        |
 | 4   |              |
 | 5   |              |
 | 6   |              |
