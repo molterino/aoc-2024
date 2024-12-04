@@ -4,28 +4,76 @@ internal static class Program
 {
     private static void Main(string[] args)
     {
+        Part1();
+        Part2(); // "I'm not proud of it, but it works."
+    }
+
+    private static void Part1()
+    {
+        const string word = "XMAS";
         var wordPuzzle = ReadWordPuzzle();
 
         // search horizontally
-        var wordOccurances = CountWordOccurances(wordPuzzle);
+        var wordOccurances = CountWordOccurances(word, wordPuzzle);
 
         // search vertically
         var transposedWordPuzzle = Transpose(wordPuzzle);
-        wordOccurances += CountWordOccurances(transposedWordPuzzle);
+        wordOccurances += CountWordOccurances(word, transposedWordPuzzle);
 
         // search diagonally left
         var leftRotatedWordPuzzle = Rotate(wordPuzzle, Direction.Left);
-        wordOccurances += CountWordOccurances(leftRotatedWordPuzzle);
+        wordOccurances += CountWordOccurances(word, leftRotatedWordPuzzle);
 
         // search diagonally right
         var rightRotatedWordPuzzle = Rotate(wordPuzzle, Direction.Right);
-        wordOccurances += CountWordOccurances(rightRotatedWordPuzzle);
+        wordOccurances += CountWordOccurances(word, rightRotatedWordPuzzle);
 
-        Console.WriteLine($"Word occurances in the word puzzle (Part 1): {wordOccurances}");
+        Console.WriteLine($"Word (XMAS) occurances in the word puzzle (Part 1): {wordOccurances}");
+    }
+
+    private static void Part2()
+    {
+        const string word = "MAS";
+        var wordPuzzle = ReadWordPuzzle();
+        var shift = word.Length;
+
+        var rows = wordPuzzle.GetLength(0);
+        var cols = wordPuzzle[0].Length;
+
+        var wordOccurances = 0;
+
+        for (int row = 0; row <= rows - shift; row++)
+        {
+            for (int col = 0; col <= cols - shift; col++)
+            {
+                var diagonal = wordPuzzle[row][col] == word[0]
+                            && wordPuzzle[row + 1][col + 1] == word[1]
+                            && wordPuzzle[row + 2][col + 2] == word[2];
+                var diagonalBackwards = wordPuzzle[row][col] == word[2]
+                            && wordPuzzle[row + 1][col + 1] == word[1]
+                            && wordPuzzle[row + 2][col + 2] == word[0];
+                var antiDiagonal = wordPuzzle[row][col + 2] == word[0]
+                            && wordPuzzle[row + 1][col + 1] == word[1]
+                            && wordPuzzle[row + 2][col] == word[2];
+                var antiDiagonalBackwards = wordPuzzle[row][col + 2] == word[2]
+                            && wordPuzzle[row + 1][col + 1] == word[1]
+                            && wordPuzzle[row + 2][col] == word[0];
+
+                var hasX = (diagonal || diagonalBackwards) && (antiDiagonal || antiDiagonalBackwards);
+                if (hasX)
+                {
+
+                    wordOccurances++;
+                }
+            }
+        }
+
+        Console.WriteLine($"Word (MAS only in X) occurances in the word puzzle (Part 2): {wordOccurances}");
     }
 
     private static string[] ReadWordPuzzle()
     {
+        //const string path = "input-template.txt";
         const string path = "input.txt";
 
         try
@@ -39,9 +87,8 @@ internal static class Program
         }
     }
 
-    private static int CountWordOccurances(string[] textLines)
+    private static int CountWordOccurances(string word, string[] textLines)
     {
-        const string word = "XMAS";
         var wordBackwards = new string(word.Reverse().ToArray());
         var occurance = 0;
 
