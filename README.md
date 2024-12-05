@@ -28,7 +28,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 2   |  ⭐ ⭐        |
 | 3   |  ⭐ ⭐        |
 | 4   |  ⭐ ⭐        |
-| 5   |  ⭐          |
+| 5   |  ⭐ ⭐        |
 | 6   |              |
 | 7   |              |
 | 8   |              |
