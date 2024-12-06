@@ -29,7 +29,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 3   |  ⭐ ⭐        |
 | 4   |  ⭐ ⭐        |
 | 5   |  ⭐ ⭐        |
-| 6   |              |
+| 6   |  ⭐          |
 | 7   |              |
 | 8   |              |
 | 9   |              |
