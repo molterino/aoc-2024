@@ -30,7 +30,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 4   |  ⭐ ⭐        |
 | 5   |  ⭐ ⭐        |
 | 6   |  ⭐ ⭐        |
-| 7   |  ⭐          |
+| 7   |  ⭐ ⭐        |
 | 8   |              |
 | 9   |              |
 | 10  |              |

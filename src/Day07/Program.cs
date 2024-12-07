@@ -6,27 +6,17 @@
 
         private static void Main(string[] args)
         {
-            // Part1: Determine which equations could possibly be true. What is their total calibration result?
             var equations = ReadEquations();
+
+            // Part1: Determine which equations could possibly be true. What is their total calibration result?
             var operators = "+*";
-            long totalCalibrationResult = 0;
-
-            foreach (var equation in equations)
-            {
-                var operatorCombinations = GenerateOperatorCombinations(operators, equation.Numbers.Count - 1);
-                foreach (var operatorCombination in operatorCombinations)
-                {
-                    var result = CalculateEquation(equation.Numbers, operatorCombination);
-
-                    if (equation.TestValue == result)
-                    {
-                        totalCalibrationResult += result;
-                        break;
-                    }
-                }
-            }
-
+            long totalCalibrationResult = CalculateTotalCalibrationResult(operators, equations);
             Console.WriteLine($"What is their total calibration result? (Part1): {totalCalibrationResult}"); //12940396350192
+
+            // Part2: New operator to concatenate numbers. What is the total calibration result for valid equations?
+            var operatorsExtended = "+*|";
+            long totalCalibrationResultExtended = CalculateTotalCalibrationResult(operatorsExtended, equations);
+            Console.WriteLine($"What is their total calibration result? (Part2): {totalCalibrationResultExtended}"); //106016735664498
         }
 
         private static List<string> GenerateOperatorCombinations(string operators, int length)
@@ -51,7 +41,7 @@
             return results;
         }
 
-        private static long CalculateEquation(List<int> numbers, string operators)
+        private static long CalculateEquation(List<long> numbers, string operators)
         {
             long result = numbers[0];
 
@@ -65,9 +55,35 @@
                 {
                     result *= numbers[i + 1];
                 }
+                else if (operators[i] == '|')
+                {
+                    result = long.Parse(result.ToString() + numbers[i + 1].ToString());
+                }
             }
 
             return result;
+        }
+
+        private static long CalculateTotalCalibrationResult(string operators, List<Equation> equations)
+        {
+            long totalCalibrationResult = 0;
+
+            foreach (var equation in equations)
+            {
+                var operatorCombinations = GenerateOperatorCombinations(operators, equation.Numbers.Count - 1);
+                foreach (var operatorCombination in operatorCombinations)
+                {
+                    var result = CalculateEquation(equation.Numbers, operatorCombination);
+
+                    if (equation.TestValue == result)
+                    {
+                        totalCalibrationResult += result;
+                        break;
+                    }
+                }
+            }
+
+            return totalCalibrationResult;
         }
 
         private static List<Equation> ReadEquations()
@@ -86,7 +102,7 @@
                     var numbers = equationParts[1]
                         .Split(" ")
                         .Where(x => !string.IsNullOrWhiteSpace(x))
-                        .Select(int.Parse)
+                        .Select(long.Parse)
                         .ToList();
 
                     var equation = new Equation
