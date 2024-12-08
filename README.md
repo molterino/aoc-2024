@@ -31,7 +31,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 5   |  ⭐ ⭐        |
 | 6   |  ⭐ ⭐        |
 | 7   |  ⭐ ⭐        |
-| 8   |              |
+| 8   |  ⭐          |
 | 9   |              |
 | 10  |              |
 | 11  |              |
