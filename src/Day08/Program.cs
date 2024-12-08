@@ -12,7 +12,8 @@
             var cols = mapLines[0].Length;
             var map = new char[rows, cols];
             var antennaGroups = new List<AntennaGroup>();
-            var antinodes = new List<(int, int)>();
+            var antinodesPart1 = new List<(int, int)>();
+            var antinodesPart2 = new List<(int, int)>();
 
             for (int x = 0; x < cols; x++)
             {
@@ -39,7 +40,7 @@
                 }
             }
 
-            // calculate antinodes
+            // calculate antinodes for part 1
             foreach (var group in antennaGroups)
             {
                 for(int i = 0; i < group.Nodes.Count - 1; i++)
@@ -63,28 +64,79 @@
                         var antinodeA = (antinodeAX, antinodeAY);
                         var antinodeB = (antinodeBX, antinodeBY);
 
-                        Console.WriteLine($"NodeA: {nodeA}, NodeB: {nodeB}");
-                        Console.WriteLine($"AntiA: {antinodeA}, AntiB: {antinodeB}\n");
-
                         var validAntinodeA = antinodeAX >= 0 && antinodeAX < cols && antinodeAY >= 0 && antinodeAY < rows;
-                        var unkonwnAntinodeA = !antinodes.Exists(x => x == antinodeA);
+                        var unkonwnAntinodeA = !antinodesPart1.Exists(x => x == antinodeA);
                         if (unkonwnAntinodeA && validAntinodeA)
                         {
-                            antinodes.Add(antinodeA);
+                            antinodesPart1.Add(antinodeA);
                         }
 
                         var validAntinodeB = antinodeBX >= 0 && antinodeBX < cols && antinodeBY >= 0 && antinodeBY < rows;
-                        var unkonwnAntinodeB = !antinodes.Exists(x => x == antinodeB);
+                        var unkonwnAntinodeB = !antinodesPart1.Exists(x => x == antinodeB);
                         if (unkonwnAntinodeB && validAntinodeB)
                         {
-                            antinodes.Add(antinodeB);
+                            antinodesPart1.Add(antinodeB);
                         }
                     }
                 }
             }
 
-            // Calculate the impact of the signal. How many unique locations within the bounds of the map contain an antinode ?
-            Console.WriteLine($"Nunber of unique locations within the bounds of the map containing an antinode (Part1): {antinodes.Count}"); // 256
+            Console.WriteLine($"Nunber of unique locations within the bounds of the map containing an antinode (Part1): {antinodesPart1.Count}"); // 256
+
+            // calculate antinodes for part 2
+            foreach (var group in antennaGroups)
+            {
+                for (int i = 0; i < group.Nodes.Count - 1; i++)
+                {
+                    for (int j = i + 1; j < group.Nodes.Count; j++)
+                    {
+                        var nodeA = group.Nodes[i];
+                        var nodeB = group.Nodes[j];
+
+                        var distanceX = nodeA.Item1 - nodeB.Item1;
+                        var distanceY = nodeA.Item2 - nodeB.Item2;
+
+                        var stopAntinodeGeneration = false;
+                        var cycle = 1;
+
+                        while (!stopAntinodeGeneration)
+                        {
+                            var shiftX = distanceX * cycle;
+                            var shiftY = distanceY * cycle;
+
+                            var antinodeAX = nodeA.Item1 - shiftX;
+                            var antinodeAY = nodeA.Item2 - shiftY;
+                            var antinodeBX = nodeB.Item1 + shiftX;
+                            var antinodeBY = nodeB.Item2 + shiftY;
+
+                            var antinodeA = (antinodeAX, antinodeAY);
+                            var antinodeB = (antinodeBX, antinodeBY);
+
+                            var validAntinodeA = antinodeAX >= 0 && antinodeAX < cols && antinodeAY >= 0 && antinodeAY < rows;
+                            var unkonwnAntinodeA = !antinodesPart2.Exists(x => x == antinodeA);
+                            if (unkonwnAntinodeA && validAntinodeA)
+                            {
+                                antinodesPart2.Add(antinodeA);
+                            }
+
+                            var validAntinodeB = antinodeBX >= 0 && antinodeBX < cols && antinodeBY >= 0 && antinodeBY < rows;
+                            var unkonwnAntinodeB = !antinodesPart2.Exists(x => x == antinodeB);
+                            if (unkonwnAntinodeB && validAntinodeB)
+                            {
+                                antinodesPart2.Add(antinodeB);
+                            }
+
+                            if (!validAntinodeA && !validAntinodeB)
+                            {
+                                stopAntinodeGeneration = true;
+                            }
+
+                            cycle++;
+                        }
+                    }
+                }
+            }
+            Console.WriteLine($"Nunber of unique locations within the bounds of the map containing an antinode (Part2): {antinodesPart2.Count}"); // 1005
         }
     }
 }
