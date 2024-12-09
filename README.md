@@ -32,7 +32,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 6   |  ⭐ ⭐        |
 | 7   |  ⭐ ⭐        |
 | 8   |  ⭐ ⭐        |
-| 9   |  ⭐          |
+| 9   |  ⭐ ⭐        |
 | 10  |              |
 | 11  |              |
 | 12  |              |
