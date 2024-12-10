@@ -33,7 +33,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 7   |  ⭐ ⭐        |
 | 8   |  ⭐ ⭐        |
 | 9   |  ⭐ ⭐        |
-| 10  |              |
+| 10  |  ⭐          |
 | 11  |              |
 | 12  |              |
 | 13  |              |
