@@ -62,45 +62,86 @@
                 }
             }
 
-            // count score
-            var overallScore = 0;
             var trailHeads = positions.Where(x => x.IsTrailHead).ToList();
+            var overallScore = 0;
+            var overallRaiting = 0;
 
+            // count score
             foreach (var trailHead in trailHeads)
             {
-                var visited = new HashSet<Position>();
-                var queue = new Queue<Position>();
-                queue.Enqueue(trailHead);
-                int score = 0;
-
-                while (queue.Count > 0)
-                {
-                    var current = queue.Dequeue();
-
-                    if (visited.Contains(current))
-                        continue;
-
-                    visited.Add(current);
-
-                    if (current.Height == MaxHeight)
-                    {
-                        score++;
-                        continue;
-                    }
-
-                    foreach (var neighbor in current.Neighbors)
-                    {
-                        if (!visited.Contains(neighbor))
-                        {
-                            queue.Enqueue(neighbor);
-                        }
-                    }
-                }
-
+                int score = CalculateScore(trailHead);
                 overallScore += score;
             }
 
-            Console.WriteLine($"What is the sum of the scores of all trailheads on your topographic map? (Part1): {overallScore}");
+            Console.WriteLine($"What is the sum of the scores of all trailheads on your topographic map? (Part1): {overallScore}"); // 822
+
+            // count raiting
+            foreach (var trailHead in trailHeads)
+            {
+                var visitedPosition = new HashSet<Position>(); ;
+                int raiting = CalulateRaiting(trailHead, visitedPosition);
+                overallRaiting += raiting;
+            }
+
+            Console.WriteLine($"What is the sum of the ratings of all trailheads? (Part2): {overallRaiting}"); // 1801
+        }
+
+        private static int CalculateScore(Position trailHead)
+        {
+            int score = 0;
+            var visitedPosition = new HashSet<Position>();
+            var queuedPositions = new Queue<Position>();
+            queuedPositions.Enqueue(trailHead);
+
+            while (queuedPositions.Count > 0)
+            {
+                var current = queuedPositions.Dequeue();
+
+                if (visitedPosition.Contains(current))
+                    continue;
+
+                visitedPosition.Add(current);
+
+                if (current.Height == MaxHeight)
+                {
+                    score++;
+                    continue;
+                }
+
+                foreach (var neighbor in current.Neighbors)
+                {
+                    if (!visitedPosition.Contains(neighbor))
+                    {
+                        queuedPositions.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return score;
+        }
+
+        private static int CalulateRaiting(Position currentPosition, HashSet<Position> visitedPosition)
+        {
+            if (currentPosition.Height == MaxHeight)
+            {
+                return 1;
+            }
+
+            int raiting = 0;
+
+            visitedPosition.Add(currentPosition);
+
+            foreach (var neighbor in currentPosition.Neighbors)
+            {
+                if (!visitedPosition.Contains(neighbor))
+                {
+                    raiting += CalulateRaiting(neighbor, visitedPosition);
+                }
+            }
+
+            visitedPosition.Remove(currentPosition);
+
+            return raiting;
         }
     }
 }
