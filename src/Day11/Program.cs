@@ -2,49 +2,45 @@
 {
     public static class Program
     {
-        private const int MaxBlink = 25;
+        //private const int MaxBlink = 25; // Part 1: 183620
+        private const int MaxBlink = 75; // Part 2: 220377651399268
 
         private static void Main(string[] args)
         {
-            var path = "input.txt";
-            //var path = "input-template.txt"; //55312
-            var line = File.ReadAllText(path);
-            var stones = line.Split(" ").ToList();
+            const string path = "input.txt";
+            //const string path = "input-template.txt"; //55312
+
+            var currentStones = File.ReadAllText(path).Split(" ").ToDictionary(long.Parse, _ => (long)1);
 
             for (var blink = 1; blink <= MaxBlink; blink++)
             {
-                var stonesAfterBlinking = new List<string>();
+                var newStones = new Dictionary<long, long>();
 
-                foreach (var stone in stones)
+                foreach (var stone in currentStones)
                 {
-                    if (stone == "0")
+                    if (stone.Key == 0)
                     {
-                        stonesAfterBlinking.Add("1");
+                        newStones.AddOrUpdate(1, stone.Value);
                     }
-                    else if (stone.Length % 2 == 0)
+                    else if (stone.Key.ToString().Length % 2 == 0)
                     {
-                        var leftStone = stone.Substring(0, stone.Length / 2);
-                        var rightStone = stone.Substring(stone.Length / 2).TrimStart('0');
+                        var leftStone = stone.Key.ToString().Substring(0, stone.Key.ToString().Length / 2);
+                        var rightStone = stone.Key.ToString().Substring(stone.Key.ToString().Length / 2);
 
-                        if (rightStone == "")
-                        {
-                            rightStone = "0";
-                        }
-
-                        stonesAfterBlinking.Add(leftStone);
-                        stonesAfterBlinking.Add(rightStone);
+                        newStones.AddOrUpdate(long.Parse(leftStone), stone.Value);
+                        newStones.AddOrUpdate(long.Parse(rightStone), stone.Value);
                     }
                     else
                     {
-                        var newStone = long.Parse(stone) * 2024;
-                        stonesAfterBlinking.Add(newStone.ToString());
+                        newStones.AddOrUpdate(stone.Key * 2024, stone.Value);
                     }
                 }
 
-                stones = stonesAfterBlinking;
+                currentStones = new Dictionary<long, long>(newStones);
+                Console.WriteLine($"blink: {blink}, stones: {currentStones.Values.Sum()}");
             }
 
-            Console.WriteLine($"How many stones will you have after blinking 25 times? (Part1): {stones.Count}"); // 183620
+            Console.WriteLine($"How many stones will you have after blinking {MaxBlink} times?: {currentStones.Values.Sum()}");
         }
     }
 }
