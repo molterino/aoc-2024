@@ -1,100 +1,115 @@
-﻿namespace Day12
+﻿using System.Drawing;
+
+namespace Day12
 {
     public static class Program
     {
-        private const int MaxBlink = 25;
-
         private static void Main(string[] args)
         {
-            var path = "input.txt"; // Part1: 1377008
-            //var path = "input-template-1.txt"; // 140
-            //var path = "input-template-2.txt"; // 772
-            //var path = "input-template-3.txt"; // 1930
+            var path = "input.txt"; // 1377008 / 815788
+            //var path = "input-template-1.txt"; // 140 / 80
+            //var path = "input-template-2.txt"; // 772 / 436
+            //var path = "input-template-3.txt"; // 1930 / 1206
 
-            var input = File.ReadAllLines(path);
-            var rows = input.Length;
-            var cols = input[0].Length;
+            var garden = File.ReadAllLines(path);
+            var rows = garden.Length;
+            var cols = garden[0].Length;
 
-            var garden = new char[rows, cols];
-            var visitedFields = new bool[rows, cols];
-
-            for (var x = 0; x < rows; x++)
-            {
-                for (var y = 0; y < cols; y++)
-                {
-                    garden[x, y] = input[x][y];
-                }
-            }
-
-            var regions = new List<Region>();
             int regionId = 0;
+            var regions = new List<Region>();
+            var visitedFields = new List<Point>();
 
             int[] shiftX = { -1, 1, 0, 0 };
             int[] shiftY = { 0, 0, -1, 1 };
+            int[] colShiftX = { -1, 1, -1, 1 };
+            int[] rowShiftY = { -1, -1, 1, 1 };
+            int[] diagonalShiftX = { -1, 1, -1, 1 };
+            int[] diagonalShiftY = { -1, -1, 1, 1 };
 
             for (int x = 0; x < rows; x++)
             {
                 for (int y = 0; y < cols; y++)
                 {
-                    var fieldVisited = visitedFields[x, y];
-                    if (!fieldVisited)
+                    var field = new Point(x, y);
+                    var isFieldVisited = visitedFields.Contains(field);
+
+                    if (isFieldVisited)
                     {
-                        var regionType = garden[x, y];
-                        var region = new Region(regionId, regionType);
+                        continue;
+                    }
 
-                        regionId++;
+                    var regionType = garden[x][y];
+                    var region = new Region(regionId, regionType);
+                    var pendingFields = new Queue<Point>();
 
-                        var pendingFields = new Queue<(int, int)>();
-                        pendingFields.Enqueue((x, y));
-                        visitedFields[x, y] = true;
+                    visitedFields.Add(field);
+                    pendingFields.Enqueue(field);
 
-                        while (pendingFields.Count > 0)
+                    while (pendingFields.Count > 0)
+                    {
+                        var queuedField = pendingFields.Dequeue();
+                        region.Fields.Add(queuedField);
+
+                        for (int i = 0; i < 4; i++)
                         {
-                            var (queuedFieldX, queuedFieldY) = pendingFields.Dequeue();
-                            region.Area++;
+                            var neighbor = new Point(queuedField.X + shiftX[i], queuedField.Y + shiftY[i]);
+                            var validNeighborPosition = neighbor.X >= 0 && neighbor.X < rows && neighbor.Y >= 0 && neighbor.Y < cols;
 
-                            for (int i = 0; i < 4; i++)
+                            if (!validNeighborPosition)
                             {
-                                int neighborX = queuedFieldX + shiftX[i];
-                                int neighborY = queuedFieldY + shiftY[i];
+                                continue;
+                            }
 
-                                var validNeighborPosition = neighborX >= 0 && neighborX < rows && neighborY >= 0 && neighborY < cols;
-                                if (validNeighborPosition)
-                                {
-                                    var neighborType = garden[neighborX, neighborY];
-                                    var isNeighborMatchingType = neighborType == region.Type;
-                                    var isNeighborVisited = visitedFields[neighborX, neighborY];
+                            var isNeighborMatchingType = garden[neighbor.X][neighbor.Y] == region.Type;
+                            var isNeighborVisited = visitedFields.Contains(new Point(neighbor.X, neighbor.Y));
+                            var shouldRegionGrow = isNeighborMatchingType && !isNeighborVisited;
 
-                                    if (isNeighborMatchingType && !isNeighborVisited)
-                                    {
-                                        visitedFields[neighborX, neighborY] = true;
-                                        pendingFields.Enqueue((neighborX, neighborY));
-                                    }
-                                    else if (!isNeighborMatchingType)
-                                    {
-                                        region.Perimeter++;
-                                    }
-                                }
-                                else
-                                {
-                                    region.Perimeter++;
-                                }
+                            if (shouldRegionGrow)
+                            {
+                                visitedFields.Add(neighbor);
+                                pendingFields.Enqueue(neighbor);
                             }
                         }
+                    }
 
-                        regions.Add(region);
+                    regions.Add(region);
+                    regionId++;
+                }
+            }
+
+            foreach (var region in regions)
+            {
+                foreach (var field in region.Fields)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var isShiftedNeighborInRegion = region.Fields.Contains(new Point(field.X + shiftX[i], field.Y + shiftY[i]));
+                        if (!isShiftedNeighborInRegion)
+                        {
+                            region.Perimeter++;
+                        }
+
+                        var isColShiftedNeighborInRegion = region.Fields.Contains(new Point(field.X + colShiftX[i], field.Y + 0));
+                        var isRowShiftedNeighborInRegion = region.Fields.Contains(new Point(field.X + 0, field.Y + rowShiftY[i]));
+                        if (!isColShiftedNeighborInRegion && !isRowShiftedNeighborInRegion)
+                        {
+                            region.OuterCorners++;
+                        }
+
+                        var isDiagonalShiftedNeighborInRegion = region.Fields.Contains(new Point(field.X + diagonalShiftX[i], field.Y + diagonalShiftY[i]));
+                        if (!isDiagonalShiftedNeighborInRegion && isColShiftedNeighborInRegion && isRowShiftedNeighborInRegion)
+                        {
+                            region.InnerCorners++;
+                        }
                     }
                 }
             }
 
-            var overallFencingPrice = 0;
-            foreach (var region in regions)
-            {
-                overallFencingPrice += region.FencingPrice;
-                Console.WriteLine($"Region {region.Type} perimeter: {region.Perimeter}, area: {region.Area}, fencing price {region.FencingPrice}");
-            }
+            var overallFencingPrice = regions.Sum(region => region.FencingPrice);
+            Console.WriteLine($"Overall fencing price (Part 1): {overallFencingPrice}");
 
-            Console.WriteLine($"Overall fencing price: {overallFencingPrice}"); // Part1: 1377008
+            var overallFencingPriceWithDiscount = regions.Sum(region => region.FencingPriceWithDiscount);
+            Console.WriteLine($"Overall fencing price with discount (Part 2): {overallFencingPriceWithDiscount}");
         }
     }
 }
