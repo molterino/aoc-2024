@@ -1,16 +1,40 @@
-﻿namespace Day14
+﻿using System.Drawing;
+
+namespace Day14
 {
     public class Space
     {
         public char[,] Map { get; }
         public int Width => Map.GetLength(0);
         public int Height => Map.GetLength(1);
-        public List<Robot> Robots { get; set; } = [];
-        public int[] RobotsInQuadrants { get; set; } = new int[4];
+        public List<Robot> Robots { get; private set; }
+        public int[] RobotsInQuadrants { get; private set; }
 
         public Space(int width, int height)
         {
             Map = new char[width, height];
+        }
+
+        public void InitSpace(string robots)
+        {
+            Robots = [];
+            RobotsInQuadrants = new int[4];
+
+            foreach (var line in File.ReadAllLines(robots))
+            {
+                var px = int.Parse(line.Split("p=")[1].Split(",")[0]);
+                var py = int.Parse(line.Split(",")[1].Split(" ")[0]);
+                var vx = int.Parse(line.Split("v=")[1].Split(",")[0]);
+                var vy = int.Parse(line.Split(",")[2]);
+
+                var robot = new Robot
+                {
+                    Position = new Point(px, py),
+                    Velocity = new Point(vx, vy)
+                };
+
+                Robots.Add(robot);
+            }
         }
 
         public void MoveRobots()
@@ -18,6 +42,14 @@
             foreach (var robot in Robots)
             {
                 robot.Move(this);
+            }
+        }
+
+        public void MoveRobots(int seconds)
+        {
+            for (var i = 0; i < seconds; i++)
+            {
+                MoveRobots();
             }
         }
 
@@ -122,6 +154,20 @@
                     }
                 }
             }
+        }
+
+        public bool HasAllTheRobotsUniquePosition()
+        {
+            foreach (var robot in Robots)
+            {
+                var robotsOnField = Robots.Count(r => r.Position.X == robot.Position.X && r.Position.Y == robot.Position.Y);
+                if (robotsOnField > 1)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

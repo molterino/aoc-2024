@@ -1,49 +1,53 @@
-﻿using System.Drawing;
-
-namespace Day14
+﻿namespace Day14
 {
     public static class Program
     {
         private static void Main(string[] args)
         {
-            const int seconds = 100;
-
-            var path = "input.txt"; // 221616000 / ?
+            var robots = "input.txt";
             var space = new Space(width: 101, height: 103);
 
-            //var path = "input-template.txt"; // 12 / ?
+            //var path = "input-template.txt";
             //var space = new Space(width: 11, height: 7); // template
 
-            foreach (var line in File.ReadAllLines(path))
-            {
-                var px = int.Parse(line.Split("p=")[1].Split(",")[0]);
-                var py = int.Parse(line.Split(",")[1].Split(" ")[0]);
-                var vx = int.Parse(line.Split("v=")[1].Split(",")[0]);
-                var vy = int.Parse(line.Split(",")[2]);
-
-                var robot = new Robot
-                {
-                    Position = new Point(px, py),
-                    Velocity = new Point(vx, vy)
-                };
-
-                space.Robots.Add(robot);
-            }
-
-            for (var i = 0; i < seconds; i++)
-            {
-                space.MoveRobots();
-            }
-
+            //Part 1
+            space.InitSpace(robots);
+            space.MoveRobots(100);
             space.DisplayQuadrants();
+            space.CountRobotsInQuadrants();
 
             Console.WriteLine("\nRobots in quadrants:");
-            space.CountRobotsInQuadrants();
             for (int i = 0; i < 4; i++)
             {
                 Console.WriteLine($"Quadrant {i + 1}: {space.RobotsInQuadrants[i]}");
             }
-            Console.WriteLine($"\nSafety factor: {space.GetSafetyFactor()}");
+            Console.WriteLine($"\nSafety factor: {space.GetSafetyFactor()}"); //221616000
+            Console.WriteLine("Press any key to continue with part 2...");
+            Console.ReadKey();
+
+            //Part 2
+            space.InitSpace(robots);
+            int counter = 1;
+
+            while(true)
+            {
+                Console.Clear();
+                Console.WriteLine($"After {counter} seconds...");
+
+                space.MoveRobots();
+
+                var possibleXmasTree = space.HasAllTheRobotsUniquePosition();
+                if (possibleXmasTree)
+                {
+                    space.DisplayMap();
+                    Console.WriteLine($"Xmas tree found after {counter} seconds!"); // 7572
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
+                    break;
+                }
+
+                counter++;
+            }
         }
     }
 }
