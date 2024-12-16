@@ -2,8 +2,8 @@
 {
     public class ClawMachine
     {
-        public int PrizeX { get; set; }
-        public int PrizeY { get; set; }
+        public long PrizeX { get; set; }
+        public long PrizeY { get; set; }
         public int ButtonAX { get; set; }
         public int ButtonAY { get; set; }
         public int ButtonBX { get; set; }
