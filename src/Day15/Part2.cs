@@ -2,19 +2,16 @@
 {
     public static class Part2
     {
+        const char Robot = '@';
+        const char Wall = '#';
+        const char Box = 'O';
+        const char BoxLeft = '[';
+        const char BoxRight = ']';
+        const char FreeSpace = '.';
+
         public static void Run()
         {
-            const char Robot = '@';
-            const char Wall = '#';
-            const char Box = 'O';
-            const char FreeSpace = '.';
-
-            const string WidenRobot = "@.";
-            const string WidenWall = "##";
-            const string WidenBox = "[]";
-            const string WidenFreeSpace = "..";
-
-            var path = "input.txt";
+            var path = "input.txt"; // 1471049
             //var path = "input-template-1.txt";
             //var path = "input-template-2.txt";
             //var path = "input-template-3.txt";
@@ -28,77 +25,69 @@
             var rows = warehouseMapData.Count;
             var map = new char[rows, cols];
 
-            for (int i = 0; i < rows; i++)
+            for (int x = 0; x < rows; x++)
             {
-                var row = warehouseMapData[i]
-                    .Replace(Wall.ToString(), WidenWall)
-                    .Replace(Box.ToString(), WidenBox)
-                    .Replace(FreeSpace.ToString(), WidenFreeSpace)
-                    .Replace(Robot.ToString(), WidenRobot)
+                var row = warehouseMapData[x]
+                    .Replace(Wall.ToString(), string.Empty + Wall + Wall)
+                    .Replace(Box.ToString(), string.Empty +BoxLeft + BoxRight)
+                    .Replace(FreeSpace.ToString(), string.Empty + FreeSpace + FreeSpace)
+                    .Replace(Robot.ToString(), string.Empty + Robot + FreeSpace)
                     .ToCharArray();
 
-                for (int j = 0; j < cols; j++)
+                for (int y = 0; y < cols; y++)
                 {
-                    map[i, j] = row[j];
+                    map[x, y] = row[y];
                 }
             }
 
-            // show widened map
             Console.WriteLine("Initial state:");
-            for(int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    Console.Write(map[i, j]);
-                }
-                Console.WriteLine();
-            }
+            Display(map);
+            Console.WriteLine("\nPress any key to start to robot...");
             Console.ReadKey();
 
             // init robot
             var robotPositionX = 0;
             var robotPositionY = 0;
 
-            for (int i = 0; i < rows; i++)
+            for (int x = 0; x < rows; x++)
             {
-                for (int j = 0; j < cols; j++)
+                for (int y = 0; y < cols; y++)
                 {
-                    if (map[i, j] == Robot)
+                    if (map[x, y] == Robot)
                     {
-                        robotPositionX = i;
-                        robotPositionY = j;
+                        robotPositionX = x;
+                        robotPositionY = y;
+                        break;
                     }
                 }
             }
 
-            // init movements
+            // init commands
             var robotCommandsData = warehouseDocument.SkipWhile(line => !string.IsNullOrWhiteSpace(line)).Skip(1).ToList();
             var commands = string.Concat(robotCommandsData).Replace(Environment.NewLine, "");
 
-            char[] commandDirections = ['^', 'v', '<', '>'];
-            int[] movementX = [-1, 1, 0, 0];
-            int[] movementY = [0, 0, -1, 1];
+            // init movements
+            char[] robotMovementCommands = ['^', 'v', '<', '>'];
+            int[] robotMovementX = [-1, 1, 0, 0];
+            int[] robotMovementY = [0, 0, -1, 1];
 
             // move robot
             foreach (var command in commands)
             {
-                Console.Clear();
-                Console.SetCursorPosition(0, 0);
-
-                //var commandIndex = Array.IndexOf(commandDirections, command);
+                var commandIndex = Array.IndexOf(robotMovementCommands, command);
+                var nextPositionX = robotPositionX + robotMovementX[commandIndex];
+                var nextPositionY = robotPositionY + robotMovementY[commandIndex];
+                var nextPosition = map[nextPositionX, nextPositionY];
 
                 if (command == '<')
                 {
-                    var nextPositionY = robotPositionY - 1;
-                    var nextPosition = map[robotPositionX, nextPositionY];
-
                     if (nextPosition == FreeSpace)
                     {
                         map[robotPositionX, robotPositionY] = FreeSpace;
                         map[robotPositionX, nextPositionY] = Robot;
                         robotPositionY = nextPositionY;
                     }
-                    else if (nextPosition == WidenBox[1])
+                    else if (nextPosition == BoxRight)
                     {
                         var afterNextPositionY = nextPositionY - 2;
                         var afterNextPosition = map[robotPositionX, afterNextPositionY];
@@ -114,8 +103,8 @@
 
                                 for (int i = 0; i < boxCounter; i++)
                                 {
-                                    map[robotPositionX, nextPositionY - 2 - (2 * i)] = WidenBox[0];
-                                    map[robotPositionX, nextPositionY - 1 - (2 * i)] = WidenBox[1];
+                                    map[robotPositionX, nextPositionY - 2 - (2 * i)] = BoxLeft;
+                                    map[robotPositionX, nextPositionY - 1 - (2 * i)] = BoxRight;
                                 }
 
                                 robotPositionY = nextPositionY;
@@ -130,16 +119,13 @@
                 }
                 else if (command == '>')
                 {
-                    var nextPositionY = robotPositionY + 1;
-                    var nextPosition = map[robotPositionX, nextPositionY];
-
                     if (nextPosition == FreeSpace)
                     {
                         map[robotPositionX, robotPositionY] = FreeSpace;
                         map[robotPositionX, nextPositionY] = Robot;
                         robotPositionY = nextPositionY;
                     }
-                    else if (nextPosition == WidenBox[0])
+                    else if (nextPosition == BoxLeft)
                     {
                         var afterNextPositionY = nextPositionY + 2;
                         var afterNextPosition = map[robotPositionX, afterNextPositionY];
@@ -155,8 +141,8 @@
 
                                 for (int i = 0; i < boxCounter; i++)
                                 {
-                                    map[robotPositionX, nextPositionY + 1 + (2 * i)] = WidenBox[0];
-                                    map[robotPositionX, nextPositionY + 2 + (2 * i)] = WidenBox[1];
+                                    map[robotPositionX, nextPositionY + 1 + (2 * i)] = BoxLeft;
+                                    map[robotPositionX, nextPositionY + 2 + (2 * i)] = BoxRight;
                                 }
 
                                 robotPositionY = nextPositionY;
@@ -171,10 +157,7 @@
                 }
                 else if (command == '^')
                 {
-                    var nextPositionX = robotPositionX - 1;
-                    var nextPosition = map[nextPositionX, robotPositionY];
-
-                    var movable = TryMoveUp(map, robotPositionX, robotPositionY);
+                    var movable = TryMoveVertically(map, robotPositionX, robotPositionY, -1);
                     if (movable)
                     {
                         map[robotPositionX, robotPositionY] = FreeSpace;
@@ -185,10 +168,7 @@
                 }
                 else if (command == 'v')
                 {
-                    var nextPositionX = robotPositionX + 1;
-                    var nextPosition = map[nextPositionX, robotPositionY];
-
-                    var movable = TryMoveDown(map, robotPositionX, robotPositionY);
+                    var movable = TryMoveVertically(map, robotPositionX, robotPositionY, 1);
 
                     if (movable)
                     {
@@ -198,20 +178,19 @@
                         robotPositionX = nextPositionX;
                     }
                 }
-                //Console.WriteLine($"Move {command}:");
-                //for (int i = 0; i < rows; i++)
-                //{
-                //    for (int j = 0; j < cols; j++)
-                //    {
-                //        Console.Write(map[i, j]);
-                //    }
-                //    Console.WriteLine();
-                //}
-
-                //Console.ReadKey();
             }
 
-            // display map
+            Console.WriteLine("\nFinal state:");
+            Display(map);
+
+            var gps = CalculateGPS(map);
+            Console.WriteLine($"\nGPS: {gps}");
+            Console.WriteLine("\nPress any key to exit...");
+            Console.ReadKey();
+        }
+
+        private static void Display(char[,] map)
+        {
             for (var i = 0; i < map.GetLength(0); i++)
             {
                 for (var j = 0; j < map.GetLength(1); j++)
@@ -220,9 +199,12 @@
                 }
                 Console.WriteLine();
             }
+        }
 
-            // calculate gps
+        private static int CalculateGPS(char[,] map)
+        {
             var gps = 0;
+
             for (var i = 0; i < map.GetLength(0); i++)
             {
                 for (var j = 0; j < map.GetLength(1); j++)
@@ -234,35 +216,35 @@
                 }
             }
 
-            Console.WriteLine($"\nGPS: {gps}");
+            return gps;
         }
 
-        static bool TryMoveUp(char[,] matrix, int startX, int startY)
+        private static bool TryMoveVertically(char[,] map, int x, int y, int direction)
         {
-            char above = matrix[startX - 1, startY];
+            char nextField = map[x + direction, y];
 
-            if (above == '#')
+            if (nextField == Wall)
             {
                 return false;
             }
 
-            if (above == '.')
+            if (nextField == FreeSpace)
             {
-                matrix[startX - 1, startY] = '@';
-                matrix[startX, startY] = '.';
+                map[x + direction, y] = Robot;
+                map[x, y] = FreeSpace;
+
                 return true;
             }
 
-             if (above == '[' || above == ']')
+            if (nextField == BoxLeft || nextField == BoxRight)
             {
-                var boxGroup = GetBoxGroupUp(matrix, startX - 1, startY);
+                var boxGroup = GetBoxGroup(map, x + direction, y, direction);
+                var isBoxGroupMovable = MoveBoxGroup(map, boxGroup, direction);
 
-                if (CanMoveBoxGroupUp(matrix, boxGroup))
+                if (isBoxGroupMovable)
                 {
-                    MoveBoxGroupUp(matrix, boxGroup);
-
-                    matrix[startX - 1, startY] = '@';
-                    matrix[startX, startY] = '.';
+                    map[x + direction, y] = Robot;
+                    map[x, y] = FreeSpace;
 
                     return true;
                 }
@@ -271,156 +253,78 @@
             return false;
         }
 
-        static List<(int, int)> GetBoxGroupUp(char[,] matrix, int row, int col)
+        private static List<(int, int)> GetBoxGroup(char[,] map, int x, int y, int direction)
         {
-            int n = matrix.GetLength(0);
-            int m = matrix.GetLength(1);
-
             var queue = new Queue<(int, int)>();
             var visited = new List<(int, int)>();
             var boxGroup = new List<(int, int)>();
 
-            queue.Enqueue((row, col));
+            queue.Enqueue((x, y));
 
             while (queue.Count > 0)
             {
                 var (currentRow, currentCol) = queue.Dequeue();
 
-                if (visited.Contains((currentRow, currentCol))) continue;
+                if (visited.Contains((currentRow, currentCol)))
+                {
+                    continue;
+                }
+
                 visited.Add((currentRow, currentCol));
                 boxGroup.Add((currentRow, currentCol));
 
-                if (currentCol > 0 && matrix[currentRow, currentCol - 1] == '[')
+                if (map[currentRow, currentCol - 1] == BoxLeft)
                 {
                     queue.Enqueue((currentRow, currentCol - 1));
                 }
 
-                if (currentCol < m - 1 && matrix[currentRow, currentCol + 1] == ']')
+                if (map[currentRow, currentCol + 1] == BoxRight)
                 {
                     queue.Enqueue((currentRow, currentCol + 1));
                 }
 
-                if (matrix[currentRow - 1, currentCol] == '[' || matrix[currentRow - 1, currentCol] == ']')
+                if (map[currentRow + direction, currentCol] == BoxLeft || map[currentRow + direction, currentCol] == BoxRight)
                 {
-                    queue.Enqueue((currentRow - 1, currentCol));
+                    queue.Enqueue((currentRow + direction, currentCol));
                 }
             }
 
             return boxGroup;
         }
 
-        static bool CanMoveBoxGroupUp(char[,] matrix, List<(int, int)> boxGroup)
+        private static bool MoveBoxGroup(char[,] map, List<(int, int)> boxGroup, int direction)
         {
+            var isBoxGroupMovable = true;
             foreach (var (row, col) in boxGroup)
             {
-                if (matrix[row - 1, col] == '#')
+                if (map[row + direction, col] == Wall)
                 {
-                    return false;
+                    isBoxGroupMovable = false;
                 }
             }
-            return true;
-        }
-
-        static void MoveBoxGroupUp(char[,] matrix, List<(int, int)> boxGroup)
-        {
-            foreach (var (row, col) in boxGroup.OrderBy(x => x.Item1).ThenBy(x => x.Item2))
+            
+            if (isBoxGroupMovable)
             {
-                matrix[row - 1, col] = matrix[row, col];
-                matrix[row, col] = '.';
-            }
-        }
+                var orderedBoxGroup = new List<(int, int)>();
 
-        static bool TryMoveDown(char[,] matrix, int startX, int startY)
-        {
-            char below = matrix[startX + 1, startY];
+                if (direction > 0) // down
+                {
+                    orderedBoxGroup = boxGroup.OrderByDescending(x => x.Item1).ThenBy(x => x.Item2).ToList();
+                }
+                else if (direction < 0) // up
+                {
+                    orderedBoxGroup = boxGroup.OrderBy(x => x.Item1).ThenBy(x => x.Item2).ToList();
+                }
 
-            if (below == '#')
-            {
-                return false;
-            }
-
-            if (below == '.')
-            {
-                matrix[startX + 1, startY] = '@';
-                matrix[startX, startY] = '.';
+                foreach (var (row, col) in orderedBoxGroup)
+                {
+                    map[row + direction, col] = map[row, col];
+                    map[row, col] = FreeSpace;
+                }
                 return true;
             }
 
-            if (below == '[' || below == ']')
-            {
-                var boxGroup = GetBoxGroupDown(matrix, startX + 1, startY);
-
-                if (CanMoveBoxGroupDown(matrix, boxGroup))
-                {
-                    MoveBoxGroupDown(matrix, boxGroup);
-
-                    matrix[startX + 1, startY] = '@';
-                    matrix[startX, startY] = '.';
-
-                    return true;
-                }
-            }
-
             return false;
-        }
-
-        static List<(int, int)> GetBoxGroupDown(char[,] matrix, int row, int col)
-        {
-            int n = matrix.GetLength(0);
-            int m = matrix.GetLength(1);
-
-            var queue = new Queue<(int, int)>();
-            var visited = new List<(int, int)>();
-            var boxGroup = new List<(int, int)>();
-
-            queue.Enqueue((row, col));
-
-            while (queue.Count > 0)
-            {
-                var (currentRow, currentCol) = queue.Dequeue();
-
-                if (visited.Contains((currentRow, currentCol))) continue;
-                visited.Add((currentRow, currentCol));
-                boxGroup.Add((currentRow, currentCol));
-
-                if (currentCol > 0 && matrix[currentRow, currentCol - 1] == '[')
-                {
-                    queue.Enqueue((currentRow, currentCol - 1));
-                }
-
-                if (currentCol < m - 1 && matrix[currentRow, currentCol + 1] == ']')
-                {
-                    queue.Enqueue((currentRow, currentCol + 1));
-                }
-
-                if (matrix[currentRow + 1, currentCol] == '[' || matrix[currentRow + 1, currentCol] == ']')
-                {
-                    queue.Enqueue((currentRow + 1, currentCol));
-                }
-            }
-
-            return boxGroup;
-        }
-
-        static bool CanMoveBoxGroupDown(char[,] matrix, List<(int, int)> boxGroup)
-        {
-            foreach (var (row, col) in boxGroup)
-            {
-                if (matrix[row + 1, col] == '#')
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        static void MoveBoxGroupDown(char[,] matrix, List<(int, int)> boxGroup)
-        {
-            foreach (var (row, col) in boxGroup.OrderByDescending(x => x.Item1).ThenBy(x => x.Item2))
-            {
-                matrix[row + 1, col] = matrix[row, col];
-                matrix[row, col] = '.';
-            }
         }
     }
 }
