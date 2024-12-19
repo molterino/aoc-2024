@@ -2,17 +2,19 @@
 {
     public static class Program
     {
-        private const string Path = "input.txt"; // 276
-        //private const string Path = "input-template.txt"; // 6
+        private const string Path = "input.txt"; // 276 / 681226908011510
+        //private const string Path = "input-template.txt"; // 6 / 14
 
         private static void Main(string[] args)
         {
             var patterns = GetPatterns(Path);
             var designs = GetDesigns(Path);
-            var cache = new Dictionary<string, bool>();
 
-            var validDesignsCount = designs.Count(design => CanConstruct(design, patterns, cache));
+            int validDesignsCount = designs.Count(design => ValidateDesign(design, patterns));
             Console.WriteLine($"{validDesignsCount} designs are possible");
+
+            long validDesignsVariantsCount = designs.Sum(design => CountDesignVariants(design, patterns));
+            Console.WriteLine($"{validDesignsVariantsCount} design variants are possible");
         }
 
         private static List<string> GetPatterns(string path)
@@ -31,8 +33,13 @@
             return designs;
         }
 
-        static bool CanConstruct(string design, List<string> patterns, Dictionary<string, bool> cache)
+        private static bool ValidateDesign(string design, List<string> patterns, Dictionary<string, bool>? cache = null)
         {
+            if (cache == null)
+            {
+                cache = [];
+            }
+
             if (cache.TryGetValue(design, out bool value))
             {
                 return value;
@@ -48,7 +55,7 @@
                 if (design.StartsWith(pattern))
                 {
                     var remaining = design.Substring(pattern.Length);
-                    if (CanConstruct(remaining, patterns, cache))
+                    if (ValidateDesign(remaining, patterns, cache))
                     {
                         cache[design] = true;
                         return true;
@@ -58,6 +65,38 @@
 
             cache[design] = false;
             return false;
+        }
+
+        private static long CountDesignVariants(string design, List<string> patterns, Dictionary<string, long>? cache = null)
+        {
+            if (cache == null)
+            {
+                cache = [];
+            }
+
+            if (cache.TryGetValue(design, out long value))
+            {
+                return value;
+            }
+
+            if (design.Length == 0)
+            {
+                return 1;
+            }
+
+            long totalCount = 0;
+
+            foreach (string word in patterns)
+            {
+                if (design.StartsWith(word))
+                {
+                    string remaining = design.Substring(word.Length);
+                    totalCount += CountDesignVariants(remaining, patterns, cache);
+                }
+            }
+
+            cache[design] = totalCount;
+            return totalCount;
         }
     }
 }

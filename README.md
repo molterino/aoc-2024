@@ -42,7 +42,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 16  |  ⭐          |
 | 17  |              |
 | 18  |              |
-| 19  |  ⭐          |
+| 19  |  ⭐ ⭐        |
 | 20  |              |
 | 21  |              |
 | 22  |              |
