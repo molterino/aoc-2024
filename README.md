@@ -45,7 +45,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 19  |  ⭐ ⭐        |
 | 20  |  ⭐          |
 | 21  |  ⭐          |
-| 22  |  ⭐          |
+| 22  |  ⭐ ⭐        |
 | 23  |              |
 | 24  |              |
 | 25  |              |
