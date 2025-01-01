@@ -25,16 +25,16 @@
                         var b = computer.ConnectedComputerNames[j];
                         var ab = a + "-" + b;
                         var ba = b + "-" + a;
-                        var isExistingConnection = Connections.Contains(ab) || Connections.Contains(ba);
 
+                        var isExistingConnection = Connections.Contains(ab) || Connections.Contains(ba);
                         if (!isExistingConnection)
                         {
                             continue;
                         }
 
                         var group = new SortedSet<string>() { computer.Name, a, b };
-                        var isChiefHistorianComputerInGroup = group.Any(x => x.StartsWith('t'));
 
+                        var isChiefHistorianComputerInGroup = group.Any(x => x.StartsWith('t'));
                         if (!isChiefHistorianComputerInGroup)
                         {
                             continue;
@@ -47,6 +47,23 @@
             }
 
             return groups.Count;
+        }
+
+        public string FindLargestGroup()
+        {
+            var largestGroup = new SortedSet<string>();
+
+            foreach (var computer in Computers)
+            {
+                SortedSet<string> currentGroup = FindGroup(computer);
+
+                if (currentGroup.Count > largestGroup.Count)
+                {
+                    largestGroup = currentGroup;
+                }
+            }
+
+            return string.Join(",", largestGroup);
         }
 
         private static List<Computer> InitComputers(string[] connections)
@@ -77,6 +94,48 @@
             {
                 computer.ConnectedComputerNames.Add(connectedComputerName);
             }
+        }
+
+        private SortedSet<string> FindGroup(Computer computer)
+        {
+            var group = new SortedSet<string> { computer.Name };
+
+            foreach (var connectedComputerName in computer.ConnectedComputerNames)
+            {
+                var connectedComputer = Computers.SingleOrDefault(c => c.Name == connectedComputerName);
+                if (connectedComputer == null)
+                {
+                    continue;
+                }
+
+                var isConnectedToAllGroupMembers = IsConnectedToAllGroupMembers(group, connectedComputer);
+                if (isConnectedToAllGroupMembers)
+                {
+                    group.Add(connectedComputer.Name);
+                }
+            }
+
+            return group;
+        }
+
+        private bool IsConnectedToAllGroupMembers(SortedSet<string> group, Computer newComputer)
+        {
+            foreach (var computerName in group)
+            {
+                var existingComputer = Computers.SingleOrDefault(c => c.Name == computerName);
+                if (existingComputer == null)
+                {
+                    return false;
+                }
+
+                var isConnectedToAllGroupMembers = existingComputer.ConnectedComputerNames.Contains(newComputer.Name);
+                if (!isConnectedToAllGroupMembers)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
