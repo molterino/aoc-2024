@@ -9,12 +9,14 @@
         private static void Main(string[] args)
         {
             var logicGates = File.ReadAllLines(Path);
-            var system = new System();
 
-            system.InitWiresAndGates(logicGates);
-            var result = system.Evaluate();
+            var rca = new RippleCarryAdder(logicGates);
 
-            Console.WriteLine(result.ToString());
+            var evaluationResult = rca.Evaluate();
+            Console.WriteLine(evaluationResult); // 54715147844840
+
+            var swappedOutputWires = rca.GetSwappedOutputWires();
+            Console.WriteLine(swappedOutputWires); // ggn,grm,jcb,ndw,twr,z10,z32,z39
         }
     }
 }
