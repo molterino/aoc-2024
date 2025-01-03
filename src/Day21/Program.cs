@@ -4,11 +4,12 @@ namespace Day21
 {
     public static class Program
     {
-        private const string Path = "input.txt"; // 237342
+        //private const int DirPadRobotsCount = 2;
+        private const int DirPadRobotsCount = 25;
+        private const string Path = "input.txt"; // 237342 / 294585598101704
         //private const string Path = "input-template.txt"; // 126384
 
-        private static Dictionary<char, (int X, int Y)> _numericKeys;
-        private static readonly char[,] _numbericKeypad = new char[,]
+        private static readonly char[,] _numericKeypad = new char[,]
         {
             { '7', '8', '9' },
             { '4', '5', '6' },
@@ -16,7 +17,6 @@ namespace Day21
             { ' ', '0', 'A' }
         };
 
-        private static Dictionary<char, (int X, int Y)> _directionalKeys;
         private static readonly char[,] _directionalKeypad = new char[,]
         {
             { ' ', '^', 'A' },
@@ -29,37 +29,34 @@ namespace Day21
             Directional
         };
 
+        private static Dictionary<char, (int X, int Y)> _numericKeys = [];
+        private static Dictionary<char, (int X, int Y)> _directionalKeys = [];
+        private static Dictionary<string, string> _stepsMemo = [];
+        private static Dictionary<(string, int), long> _dirPadInstructionsMemo = [];
+
         private static void Main(string[] args)
         {
-            _numericKeys = InitKeypadKeyPositions(_numbericKeypad);
-            _directionalKeys = InitKeypadKeyPositions(_directionalKeypad);
+            InitKeyPositions(_numericKeypad);
+            InitKeyPositions(_directionalKeypad);
+            InitStepsMemo();
 
-            var robotInstructions = GetInstrucions();
-            var overallComplexity = 0;
+            long complexity = 0;
 
-            foreach (var robotInstruction in robotInstructions)
+            foreach (var robotInstruction in File.ReadAllLines(Path))
             {
-                var keysPressedByRobotA = GetOverallSteps(robotInstruction, KeypadType.Numeric);
-                var keysPressedByRobotB = GetOverallSteps(keysPressedByRobotA, KeypadType.Directional);
-                var keysPressedByRobotC = GetOverallSteps(keysPressedByRobotB, KeypadType.Directional);
+                var numPadInstructions = GetNumPadInstructions(robotInstruction);
+                var instructionsLength = GetInstructionsLength(numPadInstructions);
 
-                overallComplexity += GetComplexity(robotInstruction, keysPressedByRobotC);
-
-                Console.WriteLine($"{robotInstruction}: {keysPressedByRobotC}");
+                complexity += GetComplexity(robotInstruction, instructionsLength);
             }
 
-            Console.WriteLine($"\nOverall complexity: {overallComplexity}");
+            Console.WriteLine($"Overall complexity with {DirPadRobotsCount} directional keypad robots: {complexity}");
         }
 
-        private static string[] GetInstrucions()
-        {
-            var lines = File.ReadAllLines(Path);
-            return lines;
-        }
-
-        private static Dictionary<char, (int x, int y)> InitKeypadKeyPositions(char[,] keypad)
+        private static void InitKeyPositions(char[,] keypad)
         {
             var keyPositions = new Dictionary<char, (int x, int y)>();
+
             for (int y = 0; y < keypad.GetLength(1); y++)
             {
                 for (int x = 0; x < keypad.GetLength(0); x++)
@@ -67,32 +64,38 @@ namespace Day21
                     keyPositions[keypad[x, y]] = (x, y);
                 }
             }
-            return keyPositions;
-        }
 
-        private static string GetOverallSteps(string instructions, KeypadType keypadType)
-        {
-            var overallSteps = string.Empty;
-
-            for (int i = -1; i < instructions.Length - 1; i++)
+            var isNumeric = keyPositions.ContainsKey('0');
+            if (isNumeric)
             {
-                var startKey = i == -1 ? 'A' : instructions[i];
-                var endKey = instructions[i + 1];
-                var steps = GetSteps(keypadType, startKey, endKey);
-
-                overallSteps += steps;
+                _numericKeys = keyPositions;
             }
-
-            return overallSteps;
+            else
+            {
+                _directionalKeys = keyPositions;
+            }
         }
 
-        static string GetSteps(KeypadType keypadType, char startKey, char endKey)
+        private static void InitStepsMemo()
+        {
+            var keys = _directionalKeys.Where(x => x.Key != ' ').Select(x => x.Key);
+
+            foreach (var from in keys)
+            {
+                foreach (var to in keys)
+                {
+                    _stepsMemo[$"{from}{to}"] = GetStepsBetweenKeys(KeypadType.Directional, from, to);
+                }
+            }
+        }
+
+        private static string GetStepsBetweenKeys(KeypadType keypadType, char startKey, char endKey)
         {
             var steps = new StringBuilder();
             char[] preferredOrder = { '<', '^', 'v', '>' };
 
             var keys = keypadType == KeypadType.Numeric ? _numericKeys : _directionalKeys;
-            var keyPad = keypadType == KeypadType.Numeric ? _numbericKeypad : _directionalKeypad;
+            var keyPad = keypadType == KeypadType.Numeric ? _numericKeypad : _directionalKeypad;
 
             var blindKeyPosition = keys[' '];
             var startKeyPosition = keys[startKey];
@@ -134,7 +137,7 @@ namespace Day21
             return sortedSteps + 'A';
         }
 
-        static bool IsInvalidPath(string steps, (int x, int y) start, (int x, int y) blocked)
+        private static bool IsInvalidPath(string steps, (int x, int y) start, (int x, int y) blocked)
         {
             int currentX = start.x, currentY = start.y;
 
@@ -154,13 +157,62 @@ namespace Day21
             return false;
         }
 
-        private static int GetComplexity(string instruction, string keysPressed)
+        private static string GetNumPadInstructions(string instructions)
+        {
+            var overallSteps = string.Empty;
+
+            for (int i = -1; i < instructions.Length - 1; i++)
+            {
+                var startKey = i == -1 ? 'A' : instructions[i];
+                var endKey = instructions[i + 1];
+                var steps = GetStepsBetweenKeys(KeypadType.Numeric, startKey, endKey);
+
+                overallSteps += steps;
+            }
+
+            return overallSteps;
+        }
+
+        private static long GetInstructionsLength(string instruction, int robotSequenceNumber = 1)
+        {
+            bool existingMemo = _dirPadInstructionsMemo.TryGetValue((instruction, robotSequenceNumber), out long instructionLength);
+            if (existingMemo)
+            {
+                return instructionLength;
+            }
+
+            char currentKey = 'A';
+
+            foreach (var key in instruction)
+            {
+                var stepsMemoKey = new string([currentKey, key]);
+                var isLastRobot = robotSequenceNumber == DirPadRobotsCount;
+
+                if (isLastRobot)
+                {
+                    instructionLength += _stepsMemo[stepsMemoKey].Length;
+                }
+                else
+                {
+                    var nextSteps = _stepsMemo[stepsMemoKey];
+                    var nextRobot = robotSequenceNumber + 1;
+                    instructionLength += GetInstructionsLength(nextSteps, nextRobot);
+                }
+
+                currentKey = key;
+            }
+
+            _dirPadInstructionsMemo[(instruction, robotSequenceNumber)] = instructionLength;
+            return instructionLength;
+        }
+
+        private static long GetComplexity(string instruction, long keysPressedCount)
         {
             var digits = instruction.Where(char.IsDigit).ToArray();
             var digitsString = new string(digits);
             var instructionValue = int.Parse(digitsString);
 
-            return keysPressed.Length * instructionValue;
+            return keysPressedCount * instructionValue;
         }
     }
 }
