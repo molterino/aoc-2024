@@ -1,4 +1,4 @@
-﻿namespace Day16
+﻿namespace Day16.old
 {
     public static class MazeSolver
     {

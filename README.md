@@ -39,7 +39,7 @@ If time permits, I’d love to experiment with additional solutions in **Python*
 | 13  |  ⭐ ⭐        |
 | 14  |  ⭐ ⭐        |
 | 15  |  ⭐ ⭐        |
-| 16  |  ⭐          |
+| 16  |  ⭐ ⭐        |
 | 17  |  ⭐ ⭐        |
 | 18  |  ⭐ ⭐        |
 | 19  |  ⭐ ⭐        |

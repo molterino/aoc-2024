@@ -1,6 +1,6 @@
-﻿namespace Day16
+﻿namespace Day16.old
 {
-    public  class NodeComparer : IComparer<Node>
+    public class NodeComparer : IComparer<Node>
     {
         public int Compare(Node a, Node b)
         {
